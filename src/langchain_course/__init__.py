@@ -50,6 +50,11 @@ if __name__ == "__main__":
 #----------------------------------------------------------------------------------------------------------------------------------
 # ALTERNATE USING TAVILY TOOL COMPOSED BY TAVILY TEAM WITH LANGCHAIN-TAVILY IMPORT
 #----------------------------------------------------------------------------------------------------------------------------------
+from typing import List
+from pydantic import BaseModel, Field
+#Pydantic's BaseModel will give us a Base Class, from which we can inherit a structred data schema
+#We get functionalities like data parsing, serialization, automatic type validation 
+#Field class allows to add metadata to our model's attributes. So we can add descriptions which is going to be helpful for the LLMs to understand what to put in that field.
 
 from dotenv import load_dotenv
 
@@ -63,12 +68,35 @@ from langchain_openai import ChatOpenAI
 #Will give agent LLM
 from langchain_tavily import TavilySearch
 
-#Here, we are not creating a custom tool, rather we are using the functionality/tool created by Tavily for langchain integration.
 
+#Describe sources for agent to get answers
+class Source (BaseModel):
+    """Schema for a source used by an agent"""
+#Defining a field called url, which is going to be a string
+    url:str = Field(description="URL of the source")
+#Point of this class is to represent the source of the answer
+
+
+
+
+#This source Pydantic class to be a nested field in another Pydantic class,which is going to be called agent response.
+#So agent response is going to have an answer and it's going to have a list of sources.
+
+
+class AgentResponse(BaseModel):
+    """Schema for Agent Response with answer and sources"""
+    answer:str = Field(description= "The agent's answer to the query")
+    sources:List[Source] = Field(default_factory=list,description="List of sources used to generate the answer" )
+# default factory: is going to be list.This will make that when we create an agent response class,if we don't provide the sources,
+# then the sources attribute is going to be populated with an empty list.
+
+#Here, we are not creating a custom tool, rather we are using the functionality/tool created by Tavily for langchain integration.
 #BOOM! HERE IS YOUR AGENT!
 llm = ChatOpenAI(model="gpt-5")
 tools =[TavilySearch()]
-agent = create_agent(model =llm, tools = tools)
+agent = create_agent(model =llm, tools = tools, response_format=AgentResponse)
+#Adding a response format value will tell the agent the exact format we want our answers in, and not the string we used to get
+
 
 def main() -> None:
     print("Hello from langchain-course!")
