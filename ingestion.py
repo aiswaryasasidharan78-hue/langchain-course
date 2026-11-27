@@ -18,8 +18,8 @@ if __name__ == "__main__":
     document = loader.load()
 
     print("splitting...")
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_documents(document)
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0) #rule of thumb when chunking: Small enough to fit into context window, and big enough to have a semantic meaning when read by humans/LLM
+    texts = text_splitter.split_documents(document) #document holds list of LangChain docs. Invoke text_splitter 
     print(f"created {len(texts)} chunks")
 
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ.get("OPENAI_API_KEY"))
@@ -29,3 +29,4 @@ if __name__ == "__main__":
         texts, embeddings, index_name=os.environ["INDEX_NAME"]
     )
     print("finish")
+
